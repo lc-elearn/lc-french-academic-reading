@@ -10,7 +10,7 @@ session, on either machine.
 | `2026-08-06-post-phase-d-handover.md` | state snapshot at end of Phase D, plus the §5 decision log |
 | [`../ROADMAP.md`](../ROADMAP.md)      | larger work beyond this queue, each with its trigger       |
 
-**Last updated:** 2026-11-04 · **HEAD:** see `git log` · **Suite:** 203 files · 2369 tests green
+**Last updated:** 2026-11-06 · **HEAD:** see `git log` · **Suite:** 203 files · 2377 tests green
 (Vitest) · 108 Playwright tests (36 × 3 browsers, `bun run test:e2e`) plus 99 on a `DEBUG=1` build (33 × 3, `e2e/debug/`) · CI green · `main` protected since 2026-10-21 (job E1).
 
 Non-negotiable constraints for every job below live in
@@ -148,16 +148,51 @@ left, in order:
     2026-11-04** (work iMac): `lc-elearn` exists with two Owners (`pedbad`, `pedbad-uol`),
     the template is `lc-elearn/lc-base-template` (moved from `d8008f8`), its protection
     read back unchanged; both Macs' clones point at the new address (step 3; the MacBook
-    Pro switched 2026-11-04 evening). **Still to
-    do:** all course repos on one day, one team per course (planned: `lc-spanish-essentials`,
-    `lc-french-academic-reading`, `lc-german-basic`, each with its author; step 7), every repo's rules read back, and rules-pilot cases R1–R12
-    on one course with a named author before authors merge independently (R13 before
-    updates, R16 before deploying). **Course repos' starting commit:** whatever template
+    Pro switched 2026-11-04 evening). **Steps 6–7 DONE 2026-11-05**: `lc-spanish-essentials`, `lc-french-academic-reading` and
+    `lc-german-basic` from `c2e6cbe`, their rules read back identical, one team each with Write
+    on its own repo, the authors invited. The authors accepted and `pedbad` left the three teams (2026-11-06). **Still to do:** rules-pilot cases R1–R12
+    on one course with a named author before authors merge independently (R13 is Spanish's first update pull request, prepared 2026-11-06 with French's and German's; R16 before deploying). **Course repos' starting commit:** whatever template
     `main` is on that day, once that commit's own push CI is green.
     **Decided 2026-11-04:** the template's two existing forks are ignored, neither is a
     course repo (`pedbad-uol/lc-base-template` is 0 commits ahead and 218 behind, so
     deleting it loses nothing). The authors' GitHub usernames are collected, kept outside
     this repo; each still confirms their Cambridge email is verified.
+
+**Update, 2026-11-09 (work iMac): template tests now follow the course's language.** The Russian course's author found that four template tests fail once `course.json` sets a `languageCode` other than `es` (Russian is the first course to do so): `FlashcardsExercise.test.tsx` expected "Spanish" and `block-renderers.test.tsx` expected `lang="es"`, though the components already read `TARGET_LANG`. Reproduced on `main` with `"ru"`: exactly those 4 failed, 2,373 passed. Their patch, applied unchanged with `git am` (they stay the author), derives the expected code and name as the components do; the full suite passes with both `es` and `ru`. **Next:** once it merges, prepare `sync-template` in all four courses (ORGANIZATION step 9), Russian first, since its first lesson's pull request stays red until then; the author then merges `main` into the open lesson branch. Known edge, left as is: the language name goes into `new RegExp(...)` unescaped, so a name with brackets, such as "Serbian (Latin)", would break those two assertions.
+
+**Update, 2026-11-06 (work iMac): a fourth course.** `lc-russian-basic-vocabulary`, forked from `bfa98f5` (push CI run 42234696595 green) and set up as ORGANIZATION steps 6–7 ("Done 2026-11-06" there). Read back identical to `lc-spanish-essentials`: merge settings, rulesets A and B, the effective rules on `main`, no `CODEOWNERS` errors. Team `russian-basic-vocabulary` with Write on that repo only; its author is the French course's author, who keeps the French team. No `sync-template` needed: it already has the lesson-image fix and the update-link docs.
+
+**Update, 2026-11-06 (work iMac): course day, part 2.** All three authors accepted. Read back: each team holds its author alone (`pedbad` removed from the three teams, keeping admin on every repo as Owner), each author has Write on their own course and read elsewhere, and no invitation is pending. **Sync fork tested:** at 09:40 UTC the Owner pressed **Sync fork → Update branch** on `lc-french-academic-reading`. Ruleset A refused it (rule suite 4947813258: A's `pull_request` and `required_status_checks`, 5 of 5 expected, failed, as did B's `pull_request`; `non_fast_forward` and `deletion` passed; before `c2e6cbe`, after `0488f82`), and `main` stayed at `c2e6cbe`. This is evidence for step 9's "never Sync fork", beside pilot R10; no rules-pilot case has run yet. The lesson-image fix below merged as PR 74 (`7bfb378`). **Decided 2026-11-06 by the maintainer, as Owner:** the update to `7bfb378` is prepared in all three courses at once, not after R13 as ORGANIZATION's pilot gate says, so no author waits to add a lesson image; each takes step 9's route (the author opens the pull request, the maintainer approves, the author merges), and Spanish's still counts as R13. **Update branches pushed 2026-11-06:** `sync-template` (merging `7bfb378`) is on `lc-spanish-essentials` (`c1e06d4`), `lc-french-academic-reading` (`7510654`) and `lc-german-basic` (`3c1806d`); each author opens their course's pull request from `https://github.com/lc-elearn/<course>/compare/main...sync-template`. **Next:** the authors open those pull requests (Spanish's is R13), the author handoff on the pilot course, then R1–R12.
+
+**Update, 2026-11-06 (work iMac): a lesson image needed the maintainer.** Rehearsing the
+rules pilot on a local copy at `c2e6cbe`, before any case ran on GitHub, showed that any
+image in a course's own lesson folder (`public/images/lo-01-test/hero.svg`) failed
+`Lint, test, build`: `src/sandbox/app-assets.test.ts` required every image under
+`public/images/` to be listed in `src/sandbox/app-assets.ts`, which `CODEOWNERS` gives the
+maintainer. Every lesson with a picture would have waited for a code-owner review, against
+the promise that a lesson-only pull request merges on green CI, and R2 would have failed.
+**Fixed:** `isCourseLessonImage()` leaves a course's own lesson images (an `images/lo-*`
+folder other than the example's, the `CODEOWNERS` boundary) out of that comparison; the
+template's images, the example's and loose files are still listed. Shown on the same local
+copy: a lesson image passes, a loose `public/images/` file still fails. The course repos
+take the fix through step 9 (pilot R13), before R2.
+
+**Update, 2026-11-05 afternoon (work iMac): course day, ORGANIZATION steps 6–7.** One step
+at a time, each change approved before it ran and read back after. Starting commit `c2e6cbe`
+(PR 72), its push CI (run 42010809276) green on all five jobs. Created in `lc-elearn`:
+`lc-spanish-essentials`, `lc-french-academic-reading` and `lc-german-basic`, true forks of the
+template (several forks into one organisation work, so no fallback); merge commits only,
+head branches deleted, not a template, Actions enabled on the website (there is no API for
+the fork button); rulesets A and B with empty bypass lists. Step 6's read-back is identical
+across the three repos, `CODEOWNERS` errors none, the template's own settings unchanged;
+GitHub's two added ruleset defaults are recorded in step 6. Teams `spanish-essentials`,
+`french-academic-reading` and `german-basic`, each with Write on its own repo only; each
+author invited as Member into their team (pending acceptance; who is in which team is kept
+outside this repo). A colleague's old personal fork of the template was deleted by its owner.
+The author guides gained a diagram of the checks, on the computer and then in CI, before the
+checks step. ORGANIZATION step 6 no longer counts four courses. **Next:** the authors accept;
+read back members, repo teams and invitations; remove `pedbad` from the three teams; the
+author handoff; rules-pilot R1–R12 on one course before anyone merges alone.
 
 **Update, 2026-11-05 (work iMac): the planned courses.** Three course repos are planned:
 `lc-spanish-essentials`, `lc-french-academic-reading` and `lc-german-basic`, each with a
@@ -168,9 +203,10 @@ examples. **Naming rule:** `lc-<language>` for a language's one course,
 without `lc-` (ORGANIZATION "Decisions already made" and step 7). The French pilot
 checklist is now [`COURSE_PILOT_CHECKLIST.md`](COURSE_PILOT_CHECKLIST.md), for whichever
 course comes first. Nothing created on GitHub yet. **Guides:** the 2026-11-04 split is
-done. The OneDrive folder "Projects - LANGCEN_Language Centre - Projects/github/" holds the
-Maintainer guide, the Mac GitHub guide, the two Windows guides and the people-and-courses
-register (`LC-eLearning-People-and-Courses.md`, which replaced `github-usernames.txt`);
+done. The shared OneDrive folder "Projects - LANGCEN_Language Centre - Projects/github/" holds the
+author guides (the Mac GitHub guide and the two Windows guides) and the people-and-courses register (`LC-eLearning-People-and-Courses.md`, which replaced `github-usernames.txt`); the
+Maintainer guide is kept privately by the maintainer, not in the shared folder (moved
+2026-11-05);
 the old `projects/github-lc-elearn-guide/` folder is gone. PR 71 (`4209795`) recorded the
 MacBook Pro switch.
 
@@ -199,8 +235,8 @@ merged as `c0855fe`, its push CI run 41823158944 green). **Tonight, MacBook Pro:
 (the `origin` URL and `gh` default); never create a repo named `lc-base-template` under
 `pedbad`. **Found, not in any doc before:** the template has two forks,
 `pedbad-uol/lc-base-template` (created 2026-10-12, probably a test: keep or delete after
-checking it holds nothing needed) and `Bagnall/lc-acwriting` (created 2026-09-25, last
-pushed 2026-10-21: does that course belong in `lc-elearn`?). **Still to do before the
+checking it holds nothing needed) and a colleague's personal fork (created 2026-09-25, last
+pushed 2026-10-21: does that course belong in `lc-elearn`?; its owner deleted it 2026-11-05). **Still to do before the
 course day:** the authors' GitHub usernames (the request went out 2026-11-04), whether
 anyone uses Windows, and the day itself. Tell the colleague who deploys from the template's ZIP the new
 address (the old ZIP link redirects, but only while no `pedbad/lc-base-template` exists),
@@ -2804,8 +2840,7 @@ rather than the Language Centre's course factory; the maintainer took three smal
   course's `main`) is withdrawn: with "up to date" required, updating it would write
   course changes into the template. Step 9 is an update branch inside the course repo,
   prepared by the maintainer or an authorised colleague and opened by the author.
-  The pilot gate before authors merge independently is R1–R12 (R13 before updates,
-  R16 before deploying), with every course repo's rules read back. Step 6 gives the
+  The pilot gate before authors merge independently is R1–R12 (R13 is Spanish's first update pull request, prepared 2026-11-06 with French's and German's; R16 before deploying), with every course repo's rules read back. Step 6 gives the
   merge-settings command and the read-back; the Free plan is stated as expected
   availability, confirmed by read-back. New section "If `pedbad` cannot be used":
   account and organisation recovery kept apart, what the backup Owner can and cannot
