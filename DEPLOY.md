@@ -328,6 +328,31 @@ folder: the demo carries internal test pages. On the demo site, open
 each viewer's own browser; "Reset" in the corner label undoes it. A new palette file
 needs a new demo build.
 
+## Preview on GitHub Pages
+
+Every course repo can publish its `main` as a **preview** at
+`https://lc-elearn.github.io/<repo>/`, listed on the landing page
+`https://lc-elearn.github.io/`. It is for the team and colleagues to try the course as it
+stands; it is **not** the live course, which is still built and uploaded by steps 1–9.
+
+- **Switch it on once:** the organisation Owner does this, without asking the author
+  (decided 2026-11-16), once the course's first template update that brings `pages.yml`
+  is merged: the repo's **Settings → Pages → Source: GitHub Actions**. From then on,
+  every merge to `main` publishes (`.github/workflows/pages.yml`); before that,
+  the workflow skips. The merge that brought `pages.yml` has already skipped, so run it
+  once by hand: **Actions → Pages → Run workflow**, or
+  `gh workflow run pages.yml -R lc-elearn/<repo> --ref main`.
+- **What it shows:** the course without the Feijoa fonts (headings in Open Sans) and
+  without debug pages. Only the template's own preview has the debug pages.
+- **The landing page** is its own repo, `lc-elearn/lc-elearn.github.io`. It finds courses
+  by itself on a schedule set to every hour, but GitHub delays scheduled runs: between
+  14 and 16 Nov 2026 they came every 4 to 9 hours. To see a new course at once, press
+  **Run workflow** on its **Publish** workflow.
+- **Who can see it:** anyone with the link. Search engines are asked not to list it
+  (`robots.txt` on the landing repo), but it is not private.
+
+Design: [`docs/specs/2026-11-13-github-pages-previews-design.md`](docs/specs/2026-11-13-github-pages-previews-design.md).
+
 ## Never
 
 - commit the Feijoa files, or put them anywhere public other than the built site;
